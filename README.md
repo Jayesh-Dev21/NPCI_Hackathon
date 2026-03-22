@@ -30,17 +30,17 @@ Risk Score = 0.55 * P(XGBoost) + 0.45 * P(LightGBM)
 
 ```mermaid
 flowchart TD
-    A[CERT r4.2 Data Sources\nfile/http/logon/device/email\npsychometric/LDAP] --> B[Data Ingestion Layer\nCSV streaming/chunked reads]
-    B --> C[User-Day Aggregation\nper user per day behavioral vectors]
-    C --> D[Feature Engineering Layer]
+    A["CERT r4.2 Data Sources<br/>file/http/logon/device/email<br/>psychometric/LDAP"] --> B["Data Ingestion Layer<br/>CSV streaming/chunked reads"]
+    B --> C["User-Day Aggregation<br/>per user per day behavioral vectors"]
+    C --> D["Feature Engineering Layer"]
 
-    D --> D1[Volume Features\nfile_count/http_count/logon_count]
-    D --> D2[Behavioral Ratio Features\nfile_del_ratio/http_sus_ratio/email_ext_ratio]
-    D --> D3[Temporal Features\nafter-hours/weekend/day_of_week/month]
-    D --> D4[Rolling Baselines\n7d mean/std per user]
-    D --> D5[User-Centric Z-Score Features\n(feature - user_mean)/(user_std + eps)]
+    D --> D1["Volume Features<br/>file_count/http_count/logon_count"]
+    D --> D2["Behavioral Ratio Features<br/>file_del_ratio/http_sus_ratio/email_ext_ratio"]
+    D --> D3["Temporal Features<br/>after-hours/weekend/day_of_week/month"]
+    D --> D4["Rolling Baselines<br/>7d mean/std per user"]
+    D --> D5["User-Centric Z-Score Features<br/>z = (x - mu) / (sigma + eps)"]
 
-    D1 --> E[Model Input Matrix\n62 engineered features]
+    D1 --> E["Model Input Matrix<br/>62 engineered features"]
     D2 --> E
     D3 --> E
     D4 --> E
@@ -49,18 +49,18 @@ flowchart TD
     E --> F1[XGBoost Classifier]
     E --> F2[LightGBM Classifier]
 
-    F1 --> G[Weighted Ensembler\n0.55 XGB + 0.45 LGB]
+    F1 --> G["Weighted Ensembler<br/>0.55 XGB + 0.45 LGB"]
     F2 --> G
     G --> H[Risk Score 0-1]
     H --> I{Thresholding/Ranking}
 
     I --> J[Top Incident Detection]
-    J --> K1[SHAP Attribution\nfeature-level impact]
-    K1 --> K2[Gemini Explanation\nSOC-friendly narrative]
+    J --> K1["SHAP Attribution<br/>feature-level impact"]
+    K1 --> K2["Gemini Explanation<br/>SOC-friendly narrative"]
 
-    I --> L[Threat Investigator UI\nTimeline + Incidents]
+    I --> L["Threat Investigator UI<br/>Timeline + Incidents"]
     K2 --> L
-    H --> M[API Layer\n/api/score /api/investigate-user]
+    H --> M["API Layer<br/>/api/score and /api/investigate-user"]
     M --> L
 ```
 
