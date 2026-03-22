@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NPCI Insider Threat Detection</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+    
+    /* Navigation */
+    nav {
+      background: #111;
+      border-bottom: 1px solid #333;
+      padding: 0;
+    }
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .nav-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      padding: 16px 20px 16px 0;
+      border-right: 1px solid #333;
+      margin-right: 20px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 0;
+      list-style: none;
+    }
+    .nav-links a {
+      color: #999;
+      text-decoration: none;
+      padding: 16px 20px;
+      display: block;
+      font-size: 13px;
+      border-right: 1px solid #222;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .nav-links a.active {
+      background: #0a0a0a;
+      color: #fff;
+      border-bottom: 2px solid #4CAF50;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 60px;
+      padding: 40px 20px;
+      background: linear-gradient(180deg, #111 0%, #0a0a0a 100%);
+      border: 1px solid #222;
+      border-radius: 4px;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: #888;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+    .metric-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 32px 24px;
+      text-align: center;
+      transition: border-color 0.3s;
+    }
+    .metric-card:hover {
+      border-color: #444;
+    }
+    .metric-value {
+      font-size: 52px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric-value.highlight {
+      color: #4CAF50;
+    }
+    .metric-label {
+      font-size: 14px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+    .metric-sublabel {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* Architecture Section */
+    .section {
+      margin-bottom: 60px;
+    }
+    .section-header {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #fff;
+      border-bottom: 1px solid #222;
+      padding-bottom: 12px;
+    }
+    .architecture {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 40px;
+    }
+    .pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .pipeline-step {
+      flex: 1;
+      min-width: 180px;
+      text-align: center;
+      position: relative;
+    }
+    .pipeline-step::after {
+      content: '→';
+      position: absolute;
+      right: -30px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      color: #444;
+    }
+    .pipeline-step:last-child::after {
+      display: none;
+    }
+    .step-icon {
+      width: 80px;
+      height: 80px;
+      background: #1a1a1a;
+      border: 2px solid #333;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+    .step-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .step-desc {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 24px;
+    }
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .feature-card p {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.6;
+    }
+    .feature-card .badge {
+      display: inline-block;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: #4CAF50;
+      margin-top: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 32px; }
+      .metric-value { font-size: 40px; }
+      .pipeline { flex-direction: column; }
+      .pipeline-step::after { display: none; }
+      .nav-links { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-container">
+      <div class="nav-brand">NPCI INSIDER THREAT</div>
+      <ul class="nav-links">
+        <li><a href="/" class="active">Overview</a></li>
+        <li><a href="/data-intelligence">Data Intelligence</a></li>
+        <li><a href="/model-performance">Model Performance</a></li>
+        <li><a href="/threat-investigator">Threat Investigator</a></li>
+        <li><a href="/users">User Activity</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Hero -->
+    <div class="hero">
+      <h1>AI-Powered Insider Threat Detection</h1>
+      <p>State-of-the-art ensemble ML system for detecting malicious insiders in enterprise environments using behavioral analytics and explainable AI</p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-value">28M+</div>
+        <div class="metric-label">Logs Processed</div>
+        <div class="metric-sublabel">HTTP • Email • File • Logon • Device</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">1,000</div>
+        <div class="metric-label">Users Monitored</div>
+        <div class="metric-sublabel">70 Known Insiders Identified</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">376</div>
+        <div class="metric-label">Threats Detected</div>
+        <div class="metric-sublabel">86% Recall • 90% Precision</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value highlight">0.0004</div>
+        <div class="metric-label">False Positive Rate</div>
+        <div class="metric-sublabel">55× Better than RedChronos SoTA</div>
+      </div>
+    </div>
+
+    <!-- Architecture -->
+    <div class="section">
+      <h2 class="section-header">System Architecture</h2>
+      <div class="architecture">
+        <div class="pipeline">
+          <div class="pipeline-step">
+            <div class="step-icon">📊</div>
+            <div class="step-title">Polars ETL</div>
+            <div class="step-desc">28M+ logs → 62 behavioral features per user-day</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-icon">⚖️</div>
+            <div class="step-title">SMOTEENN</div>
+            <div class="step-desc">Synthetic oversampling + edited nearest neighbors</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-icon">🤖</div>
+            <div class="step-title">XGB+LGB Ensemble</div>
+            <div class="step-desc">Hybrid precision + recall optimization</div>
+          </div>
+          <div class="pipeline-step">
+            <div class="step-icon">💡</div>
+            <div class="step-title">SHAP Explainability</div>
+            <div class="step-desc">Feature attribution for every prediction</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Features -->
+    <div class="section">
+      <h2 class="section-header">System Capabilities</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>User-Centric Feature Engineering</h3>
+          <p>Behavioral features normalized per user using Z-scores. Detects anomalies relative to each user's baseline (e.g., User A's 500 files vs User B's 5 files).</p>
+          <span class="badge">Novel Approach</span>
+        </div>
+        <div class="feature-card">
+          <h3>Hybrid Ensemble Strategy</h3>
+          <p>Combines XGBoost's precision (93.8%) with LightGBM's recall (55.6%) using weighted averaging (0.55 × XGB + 0.45 × LGB) for optimal threat detection.</p>
+          <span class="badge">Novel Approach</span>
+        </div>
+        <div class="feature-card">
+          <h3>Extreme Class Imbalance Handling</h3>
+          <p>SMOTEENN resampling tackles 241:1 imbalance ratio, generating 45,968 synthetic insider samples while preserving data integrity.</p>
+          <span class="badge">Production-Ready</span>
+        </div>
+        <div class="feature-card">
+          <h3>Real-Time SHAP Explanations</h3>
+          <p>Every threat alert includes waterfall charts showing exact risk attribution (e.g., +3.4 from weekend login, +2.1 from USB usage).</p>
+          <span class="badge">Explainable AI</span>
+        </div>
+        <div class="feature-card">
+          <h3>Multi-Source Data Fusion</h3>
+          <p>Integrates 5 behavioral data streams (HTTP, Email, File, Logon, Device) with psychometric profiles for comprehensive threat assessment.</p>
+          <span class="badge">Enterprise-Grade</span>
+        </div>
+        <div class="feature-card">
+          <h3>Temporal Cross-Validation</h3>
+          <p>70/30 temporal split ensures models train on past data and predict future threats, preventing data leakage and overfitting.</p>
+          <span class="badge">Production-Ready</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add subtle hover effects
+    document.querySelectorAll('.metric-card, .feature-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
+</body>
+</html>

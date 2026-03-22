@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NPCI Insider Threat Dashboard</title>
+  <style>
+    :root {
+      --bg: #f7f7f8;
+      --card: #ffffff;
+      --ink: #141414;
+      --muted: #5f6368;
+      --line: #e4e6eb;
+      --accent: #111111;
+      --accent-soft: #f1f2f4;
+      --danger: #a61b1b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(900px 320px at 50% -20%, #ffffff 0%, rgba(255,255,255,0) 70%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    .shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 14px 36px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      gap: 8px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: #ebedf0;
+      color: #23262a;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4.4vw, 44px);
+      line-height: 1.03;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      max-width: 900px;
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 1080px) {
+      .layout {
+        grid-template-columns: 360px 1fr;
+        align-items: start;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    }
+
+    .pad { padding: 14px; }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #3d434a;
+    }
+
+    input, select {
+      height: 39px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 11px;
+      font-size: 13px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #9da3ab;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+    }
+
+    .btn {
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      height: 40px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .1s ease, opacity .1s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      opacity: .95;
+    }
+
+    .status {
+      margin-top: 3px;
+      min-height: 19px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .warn {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fcfcfd;
+      padding: 10px;
+    }
+
+    .kpi .k {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .kpi .v {
+      margin-top: 6px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    h2 {
+      margin: 0 0 7px;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .chart-box {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      padding: 8px;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      height: 260px;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      overflow: auto;
+      max-height: 340px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px 9px;
+      border-bottom: 1px solid #f0f1f3;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8f9fb;
+      color: #43484f;
+      font-size: 10px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .risk { font-weight: 700; }
+
+    .footer {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #666c74;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <span class="eyebrow">SOC Command Center • Model Connected</span>
+      <h1>NPCI Insider Threat Intelligence Dashboard</h1>
+      <p class="sub">Operational risk-monitoring dashboard for SOC analysts: transforms CERT behavioral logs into user-day threat indicators and serves model-driven alert prioritization with explainable trend context.</p>
+      <p class="sub"><a href="/users" style="color:#111;text-decoration:underline;font-weight:700;">Open User Activity Explorer</a></p>
+    </section>
+
+    <section class="layout">
+      <aside class="card pad">
+        <div class="controls">
+          <div class="row">
+            <label for="modelSource">Model Source</label>
+            <select id="modelSource">
+              <option value="local" selected>Local Model File</option>
+              <option value="api">Model API</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="localModelPath">Local Model Path</label>
+            <input id="localModelPath" value="xgboost.pkl" />
+          </div>
+
+          <div class="row">
+            <label for="apiEndpoint">API Endpoint</label>
+            <input id="apiEndpoint" value="http://localhost:8000/predict" />
+          </div>
+
+          <div class="row">
+            <label for="apiKey">API Key (optional)</label>
+            <input id="apiKey" type="password" value="" />
+          </div>
+
+          <div class="row">
+            <label for="fileCsv">file.csv Path</label>
+            <input id="fileCsv" value="data/r4.2/file.csv" />
+          </div>
+
+          <div class="row">
+            <label for="httpCsv">http.csv Path</label>
+            <input id="httpCsv" value="data/r4.2/http.csv" />
+          </div>
+
+          <div class="row">
+            <label for="fileNrows">file.csv Max Rows</label>
+            <input id="fileNrows" type="number" min="1000" step="1000" value="200000" />
+          </div>
+
+          <div class="row">
+            <label for="httpNrows">http.csv Max Rows</label>
+            <input id="httpNrows" type="number" min="1000" step="1000" value="200000" />
+          </div>
+
+          <div class="row">
+            <label for="threshold">Alert Threshold</label>
+            <input id="threshold" type="number" min="0.01" max="0.99" step="0.01" value="0.70" />
+          </div>
+
+          <div class="row">
+            <label for="strictFeatures">Strict Feature Match</label>
+            <select id="strictFeatures">
+              <option value="false" selected>No (fill missing with 0)</option>
+              <option value="true">Yes (error if missing)</option>
+            </select>
+          </div>
+
+          <button id="runBtn" class="btn">Run Scoring</button>
+          <div id="status" class="status">Ready.</div>
+        </div>
+      </aside>
+
+      <section class="card pad">
+        <div class="kpis">
+          <div class="kpi"><div class="k">Rows Scored</div><div id="rowsScored" class="v">-</div></div>
+          <div class="kpi"><div class="k">Alerts</div><div id="alerts" class="v">-</div></div>
+          <div class="kpi"><div class="k">Mean Risk</div><div id="meanRisk" class="v">-</div></div>
+        </div>
+
+        <div class="summary-grid">
+          <div>
+            <h2>Daily Risk Trend vs Alert Volume</h2>
+            <div class="chart-box">
+              <canvas id="trendChart" class="chart-wrap"></canvas>
+            </div>
+          </div>
+
+          <div>
+            <h2>Top Risky User-Day Alerts</h2>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Day</th>
+                    <th>Risk Score</th>
+                    <th>Alert</th>
+                  </tr>
+                </thead>
+                <tbody id="alertsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <p class="footer">Recommended for demo stability: start with 100k-300k rows per source and scale up after validating latency.</p>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const runBtn = document.getElementById("runBtn");
+    const statusEl = document.getElementById("status");
+
+    const rowsScoredEl = document.getElementById("rowsScored");
+    const alertsEl = document.getElementById("alerts");
+    const meanRiskEl = document.getElementById("meanRisk");
+    const alertsBody = document.getElementById("alertsTableBody");
+
+    const trendCanvas = document.getElementById("trendChart");
+    const trendCtx = trendCanvas.getContext("2d");
+    let lastTrendRows = [];
+
+    const asInt = (value, fallback) => {
+      const parsed = Number.parseInt(value, 10);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+
+    const asFloat = (value, fallback) => {
+      const parsed = Number.parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+
+    const setStatus = (msg, isWarn = false) => {
+      statusEl.textContent = msg;
+      statusEl.className = isWarn ? "status warn" : "status";
+    };
+
+    const clearAlerts = () => {
+      alertsBody.innerHTML = "";
+    };
+
+    const renderAlerts = (rows) => {
+      alertsBody.innerHTML = rows
+        .map((r) => `
+          <tr>
+            <td>${r.user}</td>
+            <td>${r.day}</td>
+            <td class="risk">${Number(r.risk_score).toFixed(4)}</td>
+            <td>${r.alert ? "YES" : "NO"}</td>
+          </tr>
+        `)
+        .join("");
+    };
+
+    const collectPayload = () => ({
+      model_source: document.getElementById("modelSource").value,
+      local_model_path: document.getElementById("localModelPath").value,
+      api_endpoint: document.getElementById("apiEndpoint").value,
+      api_key: document.getElementById("apiKey").value || null,
+      file_csv: document.getElementById("fileCsv").value,
+      http_csv: document.getElementById("httpCsv").value,
+      file_nrows: asInt(document.getElementById("fileNrows").value, 200000),
+      http_nrows: asInt(document.getElementById("httpNrows").value, 200000),
+      threshold: asFloat(document.getElementById("threshold").value, 0.7),
+      strict_model_features: document.getElementById("strictFeatures").value === "true",
+    });
+
+    const drawTrendChart = (rows) => {
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = trendCanvas.clientWidth || 800;
+      const cssHeight = trendCanvas.clientHeight || 260;
+      trendCanvas.width = Math.floor(cssWidth * dpr);
+      trendCanvas.height = Math.floor(cssHeight * dpr);
+      trendCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      trendCtx.clearRect(0, 0, cssWidth, cssHeight);
+
+      if (!rows || rows.length === 0) {
+        trendCtx.fillStyle = "#666";
+        trendCtx.font = "12px IBM Plex Sans, sans-serif";
+        trendCtx.fillText("No trend data.", 14, 24);
+        return;
+      }
+
+      const pad = { t: 18, r: 22, b: 30, l: 42 };
+      const w = cssWidth - pad.l - pad.r;
+      const h = cssHeight - pad.t - pad.b;
+
+      const risks = rows.map((r) => Number(r.mean_risk || r.risk_score || 0));
+      const alerts = rows.map((r) => Number(r.alert_count || 0));
+      const maxRisk = Math.max(...risks, 0.001);
+      const maxAlert = Math.max(...alerts, 1);
+
+      const x = (i) => pad.l + (w * i) / Math.max(rows.length - 1, 1);
+      const yRisk = (v) => pad.t + (1 - v / maxRisk) * h;
+      const yAlert = (v) => pad.t + (1 - v / maxAlert) * h;
+
+      trendCtx.strokeStyle = "#e5e7ea";
+      trendCtx.lineWidth = 1;
+      trendCtx.beginPath();
+      for (let i = 0; i <= 4; i += 1) {
+        const yy = pad.t + (h * i) / 4;
+        trendCtx.moveTo(pad.l, yy);
+        trendCtx.lineTo(pad.l + w, yy);
+      }
+      trendCtx.stroke();
+
+      const barWidth = Math.max(2, Math.min(14, w / rows.length / 1.6));
+      trendCtx.fillStyle = "rgba(17,17,17,0.14)";
+      alerts.forEach((v, i) => {
+        const xx = x(i) - barWidth / 2;
+        const yy = yAlert(v);
+        trendCtx.fillRect(xx, yy, barWidth, pad.t + h - yy);
+      });
+
+      trendCtx.strokeStyle = "#101010";
+      trendCtx.lineWidth = 2;
+      trendCtx.beginPath();
+      risks.forEach((v, i) => {
+        const xx = x(i);
+        const yy = yRisk(v);
+        if (i === 0) trendCtx.moveTo(xx, yy);
+        else trendCtx.lineTo(xx, yy);
+      });
+      trendCtx.stroke();
+
+      trendCtx.fillStyle = "#101010";
+      risks.forEach((v, i) => {
+        if (i % Math.ceil(rows.length / 10) !== 0 && i !== rows.length - 1) return;
+        const xx = x(i);
+        const yy = yRisk(v);
+        trendCtx.beginPath();
+        trendCtx.arc(xx, yy, 2.4, 0, Math.PI * 2);
+        trendCtx.fill();
+      });
+
+      trendCtx.fillStyle = "#595f66";
+      trendCtx.font = "11px IBM Plex Sans, sans-serif";
+      trendCtx.fillText("Mean Risk", pad.l, 12);
+      trendCtx.fillText("Alert Count", cssWidth - 78, 12);
+      trendCtx.fillText("0", 8, pad.t + h + 3);
+      trendCtx.fillText(maxRisk.toFixed(3), 8, pad.t + 3);
+    };
+
+    runBtn.addEventListener("click", async () => {
+      clearAlerts();
+      setStatus("Running feature build and model scoring...");
+      runBtn.disabled = true;
+
+      try {
+        const response = await fetch("/api/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(collectPayload()),
+        });
+
+        const body = await response.json();
+        if (!response.ok) {
+          throw new Error(body.detail || "Request failed");
+        }
+
+        rowsScoredEl.textContent = body.metrics.rows_scored.toLocaleString();
+        alertsEl.textContent = body.metrics.alerts.toLocaleString();
+        meanRiskEl.textContent = Number(body.metrics.mean_risk).toFixed(4);
+
+        renderAlerts(body.top_alerts || []);
+        lastTrendRows = body.trend_alerts || body.trend || [];
+        drawTrendChart(lastTrendRows);
+
+        if (body.used_fallback) {
+          setStatus(`Completed with fallback scoring. Reason: ${body.fallback_reason}`, true);
+        } else {
+          const threshold = body.threshold_used !== undefined
+            ? Number(body.threshold_used).toFixed(4)
+            : "custom";
+          setStatus(`Scoring complete. Active threshold: ${threshold}.`);
+        }
+      } catch (err) {
+        setStatus(`Failed: ${err.message}`, true);
+      } finally {
+        runBtn.disabled = false;
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      drawTrendChart(lastTrendRows);
+    });
+  </script>
+</body>
+</html>

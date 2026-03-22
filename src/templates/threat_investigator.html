@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threat Investigator - NPCI Insider Threat</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+    
+    /* Navigation */
+    nav {
+      background: #111;
+      border-bottom: 1px solid #333;
+      padding: 0;
+    }
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .nav-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      padding: 16px 20px 16px 0;
+      border-right: 1px solid #333;
+      margin-right: 20px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 0;
+      list-style: none;
+    }
+    .nav-links a {
+      color: #999;
+      text-decoration: none;
+      padding: 16px 20px;
+      display: block;
+      font-size: 13px;
+      border-right: 1px solid #222;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .nav-links a.active {
+      background: #0a0a0a;
+      color: #fff;
+      border-bottom: 2px solid #4CAF50;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Header */
+    .page-header {
+      margin-bottom: 40px;
+    }
+    .page-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .page-header p {
+      font-size: 15px;
+      color: #888;
+    }
+
+    /* Controls */
+    .controls {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 24px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    .control-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    .control-group label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .control-group select, .control-group input {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .control-group select:focus, .control-group input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    .btn {
+      background: #4CAF50;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn:hover {
+      background: #66BB6A;
+      transform: translateY(-1px);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .btn:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* User Info Banner */
+    .user-info {
+      background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+      border: 1px solid #333;
+      border-left: 4px solid #F44336;
+      border-radius: 4px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .user-info.active {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .user-stat {
+      text-align: center;
+    }
+    .user-stat-label {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .user-stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #F44336;
+    }
+    .user-stat-value.safe {
+      color: #4CAF50;
+    }
+
+    /* Timeline Chart */
+    .timeline-section {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .timeline-section h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .chart-container {
+      background: #0a0a0a;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 20px;
+      min-height: 350px;
+    }
+
+    /* Incident Details */
+    .incident-section {
+      display: none;
+    }
+    .incident-section.active {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .incident-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 24px;
+    }
+    .incident-card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .incident-card .badge {
+      background: #F44336;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Top Incidents List */
+    .incidents-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .incident-item {
+      background: #0a0a0a;
+      border: 1px solid #222;
+      border-left: 3px solid #F44336;
+      border-radius: 4px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .incident-item:hover {
+      background: #111;
+      border-left-color: #FF5252;
+    }
+    .incident-date {
+      font-size: 13px;
+      color: #ddd;
+      font-family: 'Courier New', monospace;
+    }
+    .incident-risk {
+      font-size: 16px;
+      font-weight: 700;
+      color: #F44336;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* SHAP Waterfall */
+    .shap-container {
+      background: #0a0a0a;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 20px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .shap-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #111;
+      border-radius: 4px;
+      border-left: 3px solid transparent;
+    }
+    .shap-item.positive {
+      border-left-color: #F44336;
+    }
+    .shap-item.negative {
+      border-left-color: #4CAF50;
+    }
+    .shap-feature {
+      flex: 1;
+      font-size: 13px;
+      color: #ddd;
+      font-weight: 600;
+    }
+    .shap-value {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      min-width: 80px;
+      text-align: right;
+    }
+    .shap-value.positive {
+      color: #F44336;
+    }
+    .shap-value.negative {
+      color: #4CAF50;
+    }
+    .shap-bar {
+      width: 200px;
+      height: 8px;
+      background: #222;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .shap-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .shap-bar-fill.positive {
+      background: #F44336;
+    }
+    .shap-bar-fill.negative {
+      background: #4CAF50;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    .empty-state h3 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #888;
+    }
+
+    /* AI Explanation */
+    .ai-explanation {
+      background: #0a0a0a;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 20px;
+      margin-top: 24px;
+      line-height: 1.8;
+    }
+    .ai-explanation p {
+      color: #ccc;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .ai-explanation .ai-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #222;
+    }
+    .ai-explanation .ai-icon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #4CAF50, #2196F3);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .ai-explanation .ai-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .ai-explanation .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #333;
+      border-top-color: #4CAF50;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .incident-section.active { grid-template-columns: 1fr; }
+      .controls { flex-direction: column; }
+      .user-info.active { flex-direction: column; gap: 20px; }
+      .nav-links { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-container">
+      <div class="nav-brand">NPCI INSIDER THREAT</div>
+      <ul class="nav-links">
+        <li><a href="/">Overview</a></li>
+        <li><a href="/data-intelligence">Data Intelligence</a></li>
+        <li><a href="/model-performance">Model Performance</a></li>
+        <li><a href="/threat-investigator" class="active">Threat Investigator</a></li>
+        <li><a href="/users">User Activity</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Threat Investigator - Explainable AI</h1>
+      <p>Drill down into individual user risk timelines with real model predictions and SHAP-powered explanations</p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Select User</label>
+        <select id="userSelect">
+          <option value="">-- Loading users... --</option>
+        </select>
+      </div>
+      <button class="btn" id="investigateBtn" onclick="investigateUser()" disabled>Investigate</button>
+    </div>
+
+    <!-- User Info -->
+    <div class="user-info" id="userInfo">
+      <div class="user-stat">
+        <div class="user-stat-label">User ID</div>
+        <div class="user-stat-value" id="userIdDisplay">-</div>
+      </div>
+      <div class="user-stat">
+        <div class="user-stat-label">Max Risk Score</div>
+        <div class="user-stat-value" id="maxRisk">-</div>
+      </div>
+      <div class="user-stat">
+        <div class="user-stat-label">Mean Risk Score</div>
+        <div class="user-stat-value" id="meanRisk">-</div>
+      </div>
+      <div class="user-stat">
+        <div class="user-stat-label">High Risk Days</div>
+        <div class="user-stat-value" id="highRiskDays">-</div>
+      </div>
+      <div class="user-stat">
+        <div class="user-stat-label">Total Activity Days</div>
+        <div class="user-stat-value" id="totalDays">-</div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-section">
+      <h2>Risk Score Timeline</h2>
+      <div class="chart-container" id="timelineChart">
+        <div class="empty-state">
+          <h3>No User Selected</h3>
+          <p>Select a user from the dropdown above to view their risk timeline with real model predictions</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incident Details -->
+    <div class="incident-section" id="incidentSection">
+      <div class="incident-card">
+        <h2>
+          <span>Top Risk Incidents</span>
+          <span class="badge">High Risk Events</span>
+        </h2>
+        <div class="incidents-list" id="incidentsList">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="incident-card">
+        <h2>SHAP Feature Attribution</h2>
+        <p style="font-size: 13px; color: #888; margin-bottom: 16px;">
+          Highest risk incident - showing top 10 features driving the risk score
+        </p>
+        <div class="shap-container" id="shapContainer">
+          <!-- Populated dynamically -->
+        </div>
+        
+        <!-- AI Explanation -->
+        <div class="ai-explanation" id="aiExplanation" style="display: none;">
+          <div class="ai-header">
+            <div class="ai-icon">AI</div>
+            <div class="ai-label">Gemini AI Explanation</div>
+          </div>
+          <div id="aiExplanationContent">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentData = null;
+
+    // Load user list
+    async function loadUsers() {
+      try {
+        const response = await fetch(window.location.origin + '/api/users');
+        const data = await response.json();
+        
+        const select = document.getElementById('userSelect');
+        select.innerHTML = '<option value="">-- Select a user to investigate --</option>';
+        
+        data.users.forEach(user => {
+          const option = document.createElement('option');
+          option.value = user;
+          option.textContent = user;
+          select.appendChild(option);
+        });
+
+        // Enable investigate button
+        document.getElementById('investigateBtn').disabled = false;
+        
+        // Add change listener
+        select.addEventListener('change', () => {
+          document.getElementById('investigateBtn').disabled = !select.value;
+        });
+      } catch (e) {
+        console.error('Failed to load users:', e);
+        document.getElementById('userSelect').innerHTML = '<option value="">Failed to load users</option>';
+      }
+    }
+
+    async function investigateUser() {
+      const userId = document.getElementById('userSelect').value;
+      if (!userId) return;
+
+      // Show loading
+      document.getElementById('timelineChart').innerHTML = '<div class="loading">Loading user data and computing predictions...</div>';
+      document.getElementById('userInfo').classList.remove('active');
+      document.getElementById('incidentSection').classList.remove('active');
+
+      try {
+        const response = await fetch(window.location.origin + `/api/investigate-user/${userId}`);
+        const data = await response.json();
+
+        if (!data.found) {
+          document.getElementById('timelineChart').innerHTML = `
+            <div class="empty-state">
+              <h3>User Not Found</h3>
+              <p>${data.error || 'User has no activity in the current dataset'}</p>
+            </div>
+          `;
+          return;
+        }
+
+        currentData = data;
+
+        // Update stats
+        document.getElementById('userIdDisplay').textContent = data.user;
+        document.getElementById('maxRisk').textContent = data.stats.max_risk.toFixed(4);
+        document.getElementById('meanRisk').textContent = data.stats.mean_risk.toFixed(4);
+        document.getElementById('highRiskDays').textContent = data.stats.high_risk_days;
+        document.getElementById('totalDays').textContent = data.stats.total_days;
+        
+        // Color code based on max risk
+        const maxRiskEl = document.getElementById('maxRisk');
+        maxRiskEl.className = data.stats.max_risk > 0.7 ? 'user-stat-value' : 'user-stat-value safe';
+        
+        document.getElementById('userInfo').classList.add('active');
+
+        // Render timeline
+        renderTimeline(data.timeline, data.stats.max_risk);
+
+        // Render incidents
+        renderIncidents(data.top_incidents);
+
+        // Render SHAP
+        renderShap(data.top_incident_shap);
+
+        // Load AI explanation for the highest risk incident
+        if (data.top_incidents && data.top_incidents.length > 0) {
+          loadAIExplanation(data.user, data.top_incidents[0].date);
+        }
+
+        document.getElementById('incidentSection').classList.add('active');
+
+      } catch (e) {
+        console.error('Investigation failed:', e);
+        document.getElementById('timelineChart').innerHTML = `
+          <div class="empty-state">
+            <h3>Error Loading Data</h3>
+            <p>${e.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderTimeline(timeline, maxRisk) {
+      const isHighRisk = maxRisk > 0.7;
+      
+      const layout = {
+        paper_bgcolor: '#0a0a0a',
+        plot_bgcolor: '#0a0a0a',
+        font: { color: '#888', family: 'monospace', size: 11 },
+        xaxis: { 
+          gridcolor: '#222',
+          title: { text: 'Date', font: { size: 13 } }
+        },
+        yaxis: { 
+          gridcolor: '#222',
+          title: { text: 'Risk Score', font: { size: 13 } },
+          range: [0, 1]
+        },
+        hovermode: 'closest',
+        margin: { l: 60, r: 40, t: 40, b: 60 },
+        shapes: [{
+          type: 'line',
+          x0: timeline.dates[0], 
+          y0: 0.7, 
+          x1: timeline.dates[timeline.dates.length-1], 
+          y1: 0.7,
+          line: { color: '#F44336', width: 2, dash: 'dash' }
+        }]
+      };
+
+      Plotly.newPlot('timelineChart', [{
+        x: timeline.dates,
+        y: timeline.risk_scores,
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Risk Score',
+        line: { color: isHighRisk ? '#F44336' : '#4CAF50', width: 2 },
+        fill: 'tozeroy',
+        fillcolor: isHighRisk ? 'rgba(244, 67, 54, 0.1)' : 'rgba(76, 175, 80, 0.1)'
+      }], layout, { 
+        responsive: true, 
+        displayModeBar: false 
+      });
+    }
+
+    function renderIncidents(incidents) {
+      const container = document.getElementById('incidentsList');
+      
+      if (!incidents || incidents.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No high-risk incidents detected</p></div>';
+        return;
+      }
+
+      container.innerHTML = incidents.map(inc => `
+        <div class="incident-item" onclick="loadAIExplanation('${currentData.user}', '${inc.date}')">
+          <div class="incident-date">${inc.date}</div>
+          <div class="incident-risk">${inc.risk_score.toFixed(4)}</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadAIExplanation(userId, date) {
+      const aiCard = document.getElementById('aiExplanation');
+      const aiContent = document.getElementById('aiExplanationContent');
+      
+      // Show loading state
+      aiCard.style.display = 'block';
+      aiContent.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px; color: #888;">
+          <div class="loading-spinner"></div>
+          <span>Generating AI explanation for incident on ${date}...</span>
+        </div>
+      `;
+
+      try {
+        const response = await fetch(window.location.origin + `/api/explain-incident/${userId}/${date}`);
+        const data = await response.json();
+
+        if (!data.found) {
+          aiContent.innerHTML = `<p style="color: #999;">${data.error || 'Unable to generate explanation'}</p>`;
+          return;
+        }
+
+        // Display the explanation
+        aiContent.innerHTML = `
+          <p style="font-size: 13px; color: #666; margin-bottom: 12px;">
+            <strong>Date:</strong> ${data.date} &nbsp;&nbsp; <strong>Risk Score:</strong> <span style="color: #F44336; font-weight: 700;">${data.risk_score.toFixed(4)}</span>
+          </p>
+          ${data.explanation.split('\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('')}
+        `;
+      } catch (e) {
+        console.error('Failed to load AI explanation:', e);
+        aiContent.innerHTML = `<p style="color: #999;">Failed to generate explanation: ${e.message}</p>`;
+      }
+    }
+
+    function renderShap(shapValues) {
+      const container = document.getElementById('shapContainer');
+      
+      if (!shapValues || shapValues.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>SHAP values not available</p></div>';
+        return;
+      }
+
+      const maxAbsImpact = Math.max(...shapValues.map(s => Math.abs(s.shap_value)));
+
+      container.innerHTML = shapValues.map(item => {
+        const isPositive = item.shap_value > 0;
+        const barWidth = (Math.abs(item.shap_value) / maxAbsImpact) * 100;
+        
+        return `
+          <div class="shap-item ${isPositive ? 'positive' : 'negative'}">
+            <div class="shap-feature">${item.feature}</div>
+            <div class="shap-bar">
+              <div class="shap-bar-fill ${isPositive ? 'positive' : 'negative'}" 
+                   style="width: ${barWidth}%"></div>
+            </div>
+            <div class="shap-value ${isPositive ? 'positive' : 'negative'}">
+              ${item.shap_value > 0 ? '+' : ''}${item.shap_value.toFixed(3)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Load users on page load
+    loadUsers();
+  </script>
+</body>
+</html>

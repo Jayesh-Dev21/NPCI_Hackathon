@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Activity Explorer - NPCI Insider Threat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', monospace;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+    
+    /* Navigation */
+    nav {
+      background: #111;
+      border-bottom: 1px solid #333;
+      padding: 0;
+    }
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+    .nav-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      padding: 16px 20px 16px 0;
+      border-right: 1px solid #333;
+      margin-right: 20px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 0;
+      list-style: none;
+    }
+    .nav-links a {
+      color: #999;
+      text-decoration: none;
+      padding: 16px 20px;
+      display: block;
+      font-size: 13px;
+      border-right: 1px solid #222;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .nav-links a.active {
+      background: #0a0a0a;
+      color: #fff;
+      border-bottom: 2px solid #4CAF50;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Header */
+    .page-header {
+      margin-bottom: 40px;
+    }
+    .page-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .page-header p {
+      font-size: 15px;
+      color: #888;
+    }
+
+    /* Controls */
+    .controls {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 20px;
+      align-items: end;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .control-group label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    .control-group select, .control-group input {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .control-group select:focus, .control-group input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    .btn {
+      background: #4CAF50;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn:hover {
+      background: #66BB6A;
+      transform: translateY(-1px);
+    }
+
+    /* Stats */
+    .stats-bar {
+      background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+      border: 1px solid #333;
+      border-left: 4px solid #4CAF50;
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .stats-bar.active {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #4CAF50;
+    }
+
+    /* Table */
+    .table-section {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      padding: 24px;
+    }
+    .table-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .table-container {
+      background: #0a0a0a;
+      border: 1px solid #222;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead {
+      background: #111;
+    }
+    th {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #222;
+    }
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #ddd;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    tbody tr:hover {
+      background: #111;
+    }
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .mono {
+      font-family: 'Courier New', monospace;
+      color: #4CAF50;
+    }
+    .truncate {
+      max-width: 300px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    .empty-state h3 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #888;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+      .stats-bar.active {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .nav-links {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-container">
+      <div class="nav-brand">NPCI INSIDER THREAT</div>
+      <ul class="nav-links">
+        <li><a href="/">Overview</a></li>
+        <li><a href="/data-intelligence">Data Intelligence</a></li>
+        <li><a href="/model-performance">Model Performance</a></li>
+        <li><a href="/threat-investigator">Threat Investigator</a></li>
+        <li><a href="/users" class="active">User Activity</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>User Activity Explorer</h1>
+      <p>Drill down into individual user behaviors across HTTP, file, logon, device, email, and psychometric data sources</p>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>User ID</label>
+        <select id="userSelect">
+          <option value="">-- Loading users... --</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Data Source</label>
+        <select id="sourceSelect">
+          <option value="http">HTTP Requests</option>
+          <option value="file">File Activity</option>
+          <option value="logon">Logon Events</option>
+          <option value="device">Device Usage</option>
+          <option value="email">Email Activity</option>
+          <option value="psychometric">Psychometric Profile</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Max Rows</label>
+        <input type="number" id="maxRows" value="100" min="10" max="1000">
+      </div>
+      <button class="btn" onclick="loadActivity()">Load Activity</button>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-item">
+        <div class="stat-label">User ID</div>
+        <div class="stat-value" id="displayUser">-</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Data Source</div>
+        <div class="stat-value" id="displaySource">-</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Records Found</div>
+        <div class="stat-value" id="displayCount">-</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-section">
+      <h2>Activity Records</h2>
+      <div class="table-container">
+        <div id="tableContent">
+          <div class="empty-state">
+            <h3>No Data Loaded</h3>
+            <p>Select a user and data source above to view activity records</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load user list on page load
+    async function loadUsers() {
+      try {
+        const response = await fetch(window.location.origin + '/api/users');
+        const data = await response.json();
+        
+        const select = document.getElementById('userSelect');
+        select.innerHTML = '<option value="">-- Select a user --</option>';
+        
+        data.users.forEach(user => {
+          const option = document.createElement('option');
+          option.value = user;
+          option.textContent = user;
+          select.appendChild(option);
+        });
+      } catch (e) {
+        console.error('Failed to load users:', e);
+        document.getElementById('userSelect').innerHTML = '<option value="">Failed to load users</option>';
+      }
+    }
+
+    async function loadActivity() {
+      const user = document.getElementById('userSelect').value;
+      const source = document.getElementById('sourceSelect').value;
+      const maxRows = parseInt(document.getElementById('maxRows').value);
+
+      if (!user) {
+        alert('Please select a user');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('tableContent').innerHTML = '<div class="loading">Loading activity...</div>';
+
+      try {
+        const response = await fetch(window.location.origin + '/api/user-activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user, source, max_rows: maxRows })
+        });
+
+        const data = await response.json();
+
+        // Update stats
+        document.getElementById('displayUser').textContent = data.user;
+        document.getElementById('displaySource').textContent = source.toUpperCase();
+        document.getElementById('displayCount').textContent = data.count;
+        document.getElementById('statsBar').classList.add('active');
+
+        // Render table
+        if (data.count === 0) {
+          document.getElementById('tableContent').innerHTML = `
+            <div class="empty-state">
+              <h3>No Records Found</h3>
+              <p>User ${data.user} has no ${source} activity in the dataset</p>
+            </div>
+          `;
+          return;
+        }
+
+        const columns = Object.keys(data.rows[0]);
+        
+        let tableHTML = '<table><thead><tr>';
+        columns.forEach(col => {
+          tableHTML += `<th>${col}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+
+        data.rows.forEach(row => {
+          tableHTML += '<tr>';
+          columns.forEach(col => {
+            let value = row[col] ?? '';
+            let cellClass = '';
+            
+            // Format specific columns
+            if (col === 'user' || col === 'user_id') {
+              cellClass = 'mono';
+            } else if (typeof value === 'string' && value.length > 100) {
+              cellClass = 'truncate';
+              value = value.substring(0, 100) + '...';
+            }
+            
+            tableHTML += `<td class="${cellClass}">${value}</td>`;
+          });
+          tableHTML += '</tr>';
+        });
+
+        tableHTML += '</tbody></table>';
+        document.getElementById('tableContent').innerHTML = tableHTML;
+
+      } catch (e) {
+        console.error('Failed to load activity:', e);
+        document.getElementById('tableContent').innerHTML = `
+          <div class="empty-state">
+            <h3>Error Loading Data</h3>
+            <p>${e.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Load users on page load
+    loadUsers();
+  </script>
+</body>
+</html>
